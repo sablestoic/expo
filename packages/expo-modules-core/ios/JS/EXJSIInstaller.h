@@ -24,8 +24,8 @@ extern NSString *_Nonnull const EXGlobalCoreObjectPropertyName;
 @interface EXJavaScriptRuntimeManager : NSObject
 
 /**
- Gets the JS runtime from the given bridge. May return `nil` when
- the runtime is not available yet or the remote debugging is enabled.
+ Initializes the runtime installer with a raw pointer to the runtime.
+ It must be a raw pointer instead of `jsi::Runtime` to be visible for Swift without C++ interop.
  */
 + (nullable EXRuntime *)runtimeFromBridge:(nonnull RCTBridge *)bridge NS_SWIFT_NAME(runtime(fromBridge:));
 
@@ -42,21 +42,21 @@ extern NSString *_Nonnull const EXGlobalCoreObjectPropertyName;
 /**
  Installs the base class for shared objects, i.e. `global.expo.SharedObject`.
  */
-+ (void)installSharedObjectClass:(nonnull EXJavaScriptRuntime *)runtime releaser:(void (^)(long))releaser;
+- (void)installSharedObjectClass:(void (^_Nonnull)(long))releaser;
 
 /**
  Installs the base class for shared refs, i.e. `global.expo.SharedRef`.
  */
-+ (void)installSharedRefClass:(nonnull EXJavaScriptRuntime *)runtime;
+- (void)installSharedRefClass;
 
 /**
  Installs the EventEmitter class in the given runtime as `global.expo.EventEmitter`.
  */
-+ (void)installEventEmitterClass:(nonnull EXJavaScriptRuntime *)runtime;
+- (void)installEventEmitterClass;
 
 /**
  Installs the NativeModule class in the given runtime as `global.expo.NativeModule`.
  */
-+ (void)installNativeModuleClass:(nonnull EXJavaScriptRuntime *)runtime;
+- (void)installNativeModuleClass;
 
 @end

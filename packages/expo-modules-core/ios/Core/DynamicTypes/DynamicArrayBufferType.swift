@@ -18,37 +18,39 @@ internal struct DynamicArrayBufferType: AnyDynamicType {
    Converts JS array buffer to its native representation.
    */
   func cast(jsValue: JavaScriptValue, appContext: AppContext) throws -> Any {
-    if let jsTypedArray = jsValue.getTypedArray() {
-      switch innerType {
-        case is JavaScriptArrayBuffer.Type:
-          return JavaScriptArrayBuffer(jsTypedArray.getViewedBufferSlice())
-        case is NativeArrayBuffer.Type:
-          let typedArray = TypedArray(jsTypedArray)
-          return NativeArrayBuffer.copy(of: typedArray.rawPointer, count: typedArray.byteLength)
-        default:
-          throw ArrayBufferArgumentTypeException(innerType)
-      }
-    }
-
-    guard let rawArrayBuffer = jsValue.getArrayBuffer() else {
-      throw NotArrayBufferException(innerType)
-    }
-
-    let jsArrayBuffer = JavaScriptArrayBuffer(rawArrayBuffer)
-    return switch innerType {
-      case is JavaScriptArrayBuffer.Type: jsArrayBuffer
-      case is NativeArrayBuffer.Type: jsArrayBuffer.copy()
-      // this might happen when a user implemented own subclass of ArrayBuffer
-      // or uses 'ArrayBuffer' directly
-      default: throw ArrayBufferArgumentTypeException(innerType)
-    }
+//    if let jsTypedArray = jsValue.getTypedArray() {
+//      switch innerType {
+//        case is JavaScriptArrayBuffer.Type:
+//          return JavaScriptArrayBuffer(jsTypedArray.getViewedBufferSlice())
+//        case is NativeArrayBuffer.Type:
+//          let typedArray = TypedArray(jsTypedArray)
+//          return NativeArrayBuffer.copy(of: typedArray.rawPointer, count: typedArray.byteLength)
+//        default:
+//          throw ArrayBufferArgumentTypeException(innerType)
+//      }
+//    }
+//
+//    guard let rawArrayBuffer = jsValue.getArrayBuffer() else {
+//      throw NotArrayBufferException(innerType)
+//    }
+//
+//    let jsArrayBuffer = JavaScriptArrayBuffer(rawArrayBuffer)
+//    return switch innerType {
+//      case is JavaScriptArrayBuffer.Type: jsArrayBuffer
+//      case is NativeArrayBuffer.Type: jsArrayBuffer.copy()
+//      // this might happen when a user implemented own subclass of ArrayBuffer
+//      // or uses 'ArrayBuffer' directly
+//      default: throw ArrayBufferArgumentTypeException(innerType)
+//    }
+    fatalError()
   }
 
   func convertResult<ResultType>(_ result: ResultType, appContext: AppContext) throws -> Any {
-    guard let arrayBuffer = result as? ArrayBuffer else {
-      throw Conversions.ConversionToJSFailedException((kind: .object, nativeType: ResultType.self))
-    }
-    return arrayBuffer.backingBuffer
+//    guard let arrayBuffer = result as? ArrayBuffer else {
+//      throw Conversions.ConversionToJSFailedException((kind: .object, nativeType: ResultType.self))
+//    }
+//    return arrayBuffer.backingBuffer
+    fatalError()
   }
 
   var description: String {

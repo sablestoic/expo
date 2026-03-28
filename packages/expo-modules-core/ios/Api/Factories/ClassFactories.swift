@@ -25,7 +25,7 @@ public func Class(
   _ name: String,
   @ClassDefinitionBuilder<JavaScriptObject> @_implicitSelfCapture _ elements: () -> [AnyClassDefinitionElement]
 ) -> ClassDefinition {
-  return ClassDefinition(name: name, associatedType: JavaScriptObject.self, elements: elements())
+  return ClassDefinition(name: name, elements: elements())
 }
 
 /**

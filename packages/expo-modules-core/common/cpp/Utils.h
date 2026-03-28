@@ -1,9 +1,10 @@
 // Copyright 2022-present 650 Industries. All rights reserved.
 
 #pragma once
+
 #ifdef __cplusplus
 
-#include <jsi/jsi.h>
+#import <jsi/jsi.h>
 
 namespace jsi = facebook::jsi;
 
@@ -64,12 +65,12 @@ struct PropertyDescriptor {
 /**
  Defines the property on the object with the provided descriptor options.
  */
-void defineProperty(jsi::Runtime &runtime, jsi::Object *object, const char *name, const PropertyDescriptor& descriptor);
+void defineProperty(jsi::Runtime &runtime, const jsi::Object &object, const char *name, const PropertyDescriptor& descriptor);
 
 /**
  Calls `Object.defineProperty(object, name, descriptor)`.
  */
-void defineProperty(jsi::Runtime &runtime, jsi::Object *object, const char *name, jsi::Object descriptor);
+void defineProperty(jsi::Runtime &runtime, const jsi::Object &object, const char *name, jsi::Object descriptor);
 
 } // namespace expo::common
 

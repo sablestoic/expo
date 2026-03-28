@@ -3,7 +3,7 @@
 /**
  A protocol for classes/structs accepted as an argument of functions.
  */
-public protocol AnyArgument {
+public protocol AnyArgument: ~Copyable {
   nonisolated static func getDynamicType() -> AnyDynamicType
 }
 

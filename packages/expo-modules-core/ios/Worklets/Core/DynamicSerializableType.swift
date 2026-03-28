@@ -1,5 +1,6 @@
 // Copyright 2025-present 650 Industries. All rights reserved.
 
+@_spi(Unsafe) import ExpoModulesJSI
 import ExpoModulesCore
 
 internal struct DynamicSerializableType: AnyDynamicType {
@@ -20,7 +21,13 @@ internal struct DynamicSerializableType: AnyDynamicType {
     guard let runtime = appContext._runtime else {
       throw Exceptions.RuntimeLost()
     }
-    guard let jsSerializable = SerializableExtractor.extractSerializable(jsValue, runtime: runtime) else {
+    let jsSerializable: JavaScriptSerializable? = jsValue.withUnsafePointer { valuePointer in
+      SerializableExtractor.extractSerializable(
+        runtimePointer: runtime.unsafe_pointee,
+        valuePointer: valuePointer
+      )
+    }
+    guard let jsSerializable else {
       throw NotSerializableException(innerType)
     }
     return Serializable(jsSerializable)

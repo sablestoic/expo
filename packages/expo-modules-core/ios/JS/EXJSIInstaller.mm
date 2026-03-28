@@ -4,8 +4,6 @@
 
 #import <ExpoModulesCore/EXAppContextProtocol.h>
 #import <ExpoModulesCore/EXJSIInstaller.h>
-#import <ExpoModulesCore/ExpoModulesHostObject.h>
-#import <ExpoModulesCore/LazyObject.h>
 #import <ExpoModulesCore/SharedObject.h>
 #import <ExpoModulesCore/SharedRef.h>
 #import <ExpoModulesCore/EventEmitter.h>
@@ -29,23 +27,17 @@ NSString *const EXGlobalCoreObjectPropertyName = @"expo";
  */
 static NSString *modulesHostObjectPropertyName = @"modules";
 
-@interface RCTBridge (ExpoBridgeWithRuntime)
+@implementation EXJavaScriptRuntimeManager {
+  std::shared_ptr<jsi::Runtime> _runtime;
+}
 
-- (void *)runtime;
-- (std::shared_ptr<facebook::react::CallInvoker>)jsCallInvoker;
-
-@end
-
-@implementation EXJavaScriptRuntimeManager
-
-+ (nullable EXRuntime *)runtimeFromBridge:(nonnull RCTBridge *)bridge
+- (nonnull instancetype)initWithRuntime:(nonnull void *)runtime
 {
-  jsi::Runtime *jsiRuntime = reinterpret_cast<jsi::Runtime *>(bridge.runtime);
-  if (!jsiRuntime) {
-    return nil;
+  if (self = [super init]) {
+    // Make shared pointer that points to the runtime but doesn't own it, thus doesn't release it.
+    _runtime = std::shared_ptr<jsi::Runtime>(std::shared_ptr<jsi::Runtime>(), reinterpret_cast<jsi::Runtime *>(runtime));
   }
-
-  return [[EXRuntime alloc] initWithRuntime:*jsiRuntime];
+  return self;
 }
 
 #pragma mark - Installing JSI bindings
@@ -90,19 +82,19 @@ static NSString *modulesHostObjectPropertyName = @"modules";
   });
 }
 
-+ (void)installSharedRefClass:(nonnull EXJavaScriptRuntime *)runtime
+- (void)installSharedRefClass
 {
-  expo::SharedRef::installBaseClass(*[runtime get]);
+  expo::SharedRef::installBaseClass(*_runtime);
 }
 
-+ (void)installEventEmitterClass:(nonnull EXJavaScriptRuntime *)runtime
+- (void)installEventEmitterClass
 {
-  expo::EventEmitter::installClass(*[runtime get]);
+  expo::EventEmitter::installClass(*_runtime);
 }
 
-+ (void)installNativeModuleClass:(nonnull EXJavaScriptRuntime *)runtime
+- (void)installNativeModuleClass
 {
-  expo::NativeModule::installClass(*[runtime get]);
+  expo::NativeModule::installClass(*_runtime);
 }
 
 @end

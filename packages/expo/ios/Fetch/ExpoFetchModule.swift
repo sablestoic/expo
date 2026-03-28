@@ -59,10 +59,10 @@ public final class ExpoFetchModule: Module {
       Property("redirected", \.redirected)
 
       AsyncFunction("arrayBuffer") { (response: NativeResponse, promise: Promise) in
-        response.waitFor(states: [.bodyCompleted]) { _ in
-          let data = response.sink.finalize()
-          promise.resolve(ArrayBuffer.wrap(dataWithoutCopy: data))
-        }
+//        response.waitFor(states: [.bodyCompleted]) { _ in
+//          let data = response.sink.finalize()
+//          promise.resolve(ArrayBuffer.wrap(dataWithoutCopy: data))
+//        }
       }.runOnQueue(fetchRequestQueue)
 
       AsyncFunction("text") { (response: NativeResponse, promise: Promise) in

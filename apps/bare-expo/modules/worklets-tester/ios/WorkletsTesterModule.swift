@@ -9,28 +9,28 @@ public final class WorkletsTesterModule: Module {
       guard let uiRuntime = try appContext?.uiRuntime as? WorkletRuntime else {
         throw Exceptions.RuntimeLost()
       }
-      worklet.execute(on: uiRuntime)
+      // worklet.execute(on: uiRuntime)
     }
 
     Function("scheduleWorklet") { (worklet: Worklet) in
       guard let uiRuntime = try appContext?.uiRuntime as? WorkletRuntime else {
         throw Exceptions.RuntimeLost()
       }
-      worklet.schedule(on: uiRuntime)
+      // worklet.schedule(on: uiRuntime)
     }
 
     Function("executeWorkletWithArgs") { (worklet: Worklet) in
       guard let uiRuntime = try appContext?.uiRuntime as? WorkletRuntime else {
         throw Exceptions.RuntimeLost()
       }
-      worklet.execute(on: uiRuntime, arguments: [2026, "worklet", true])
+      // worklet.execute(on: uiRuntime, arguments: [2026, "worklet", true])
     }
 
     Function("scheduleWorkletWithArgs") { (worklet: Worklet) in
       guard let uiRuntime = try appContext?.uiRuntime as? WorkletRuntime else {
         throw Exceptions.RuntimeLost()
       }
-      worklet.schedule(on: uiRuntime, arguments: [2026, "worklet", true])
+      // worklet.schedule(on: uiRuntime, arguments: [2026, "worklet", true])
     }
   }
 }

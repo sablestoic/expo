@@ -1,12 +1,24 @@
 // Copyright 2021-present 650 Industries. All rights reserved.
 
+import ExpoModulesJSI
+
 public struct Promise: AnyArgument, Sendable {
-  public typealias ResolveClosure = @Sendable (Any?) -> Void
+  public typealias ResolveClosure = @Sendable ((any JavaScriptRepresentable)?) -> Void
   public typealias RejectClosure = @Sendable (Exception) -> Void
 
   internal weak var appContext: AppContext?
   public var resolver: ResolveClosure
   public var rejecter: RejectClosure
+
+  /**
+   The resolver that is compatible with the legacy `EXPromiseResolveBlock`.
+   Necessary in some places not converted to Swift, such as `EXPermissionsMethodsDelegate`.
+   */
+  public var legacyResolver: EXPromiseResolveBlock {
+    return { value in
+      resolve(value)
+    }
+  }
 
   /**
    The rejecter that is compatible with the legacy `EXPromiseRejectBlock`.
@@ -19,7 +31,7 @@ public struct Promise: AnyArgument, Sendable {
   }
 
   public func resolve(_ value: Any? = nil) {
-    resolver(value)
+    resolver(value as? JavaScriptRepresentable)
   }
 
   public func reject(_ error: Error) {

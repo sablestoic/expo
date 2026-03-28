@@ -18,7 +18,7 @@ RCT_EXPORT_MODULE(ExpoModulesCore);
   if (self = [super init]) {
     // Use registry to create AppContext - Swift factory registers itself at
     // load time
-    _appContext = (EXAppContext *)[EXAppContextFactoryRegistry createAppContext];
+//    _appContext = (EXAppContext *)[EXAppContextFactoryRegistry createAppContext];
   }
   return self;
 }
@@ -44,32 +44,32 @@ RCT_EXPORT_MODULE(ExpoModulesCore);
 
 - (void)maybeSetupAppContext
 {
-  if (!_bridge) {
-    return;
-  }
-  EXRuntime *runtime = [EXJavaScriptRuntimeManager runtimeFromBridge:_bridge];
-
-  // Cast to protocol to access properties without importing Swift.h
-  id<EXAppContextProtocol> ctx = (id<EXAppContextProtocol>)_appContext;
-
-  if (!runtime) {
-    NSLog(@"Unable to get the JSI runtime from the bridge instance, make sure to use ExpoReactNativeFactory for newer bridgeless integration");
-    return;
-  }
-
-  // If `global.expo` is defined, the app context has already been initialized from `ExpoReactNativeFactory`.
-  // The factory was introduced in SDK 55 and requires migration in bare workflow projects.
-  // We keep this as an alternative way during the transitional period.
-  if (![[runtime global] hasProperty:@"expo"]) {
-    NSLog(@"Expo is being initialized from the deprecated ExpoBridgeModule, make sure to migrate to ExpoReactNativeFactory in your project");
-
-    // Set reactBridge directly on _appContext since it's not part of the
-    // protocol (reactBridge is internal to expo-modules-core). Cast to id to
-    // avoid forward declaration issue.
-    [(id)_appContext setValue:_bridge forKey:@"reactBridge"];
-    ctx._runtime = runtime;
-    [ctx registerNativeModules];
-  }
+//  if (!_bridge) {
+//    return;
+//  }
+//  EXRuntime *runtime = [EXJavaScriptRuntimeManager runtimeFromBridge:_bridge];
+//
+//  // Cast to protocol to access properties without importing Swift.h
+//  id<EXAppContextProtocol> ctx = (id<EXAppContextProtocol>)_appContext;
+//
+//  if (!runtime) {
+//    NSLog(@"Unable to get the JSI runtime from the bridge instance, make sure to use ExpoReactNativeFactory for newer bridgeless integration");
+//    return;
+//  }
+//
+//  // If `global.expo` is defined, the app context has already been initialized from `ExpoReactNativeFactory`.
+//  // The factory was introduced in SDK 55 and requires migration in bare workflow projects.
+//  // We keep this as an alternative way during the transitional period.
+//  if (![[runtime global] hasProperty:@"expo"]) {
+//    NSLog(@"Expo is being initialized from the deprecated ExpoBridgeModule, make sure to migrate to ExpoReactNativeFactory in your project");
+//
+//    // Set reactBridge directly on _appContext since it's not part of the
+//    // protocol (reactBridge is internal to expo-modules-core). Cast to id to
+//    // avoid forward declaration issue.
+//    [(id)_appContext setValue:_bridge forKey:@"reactBridge"];
+//    ctx._runtime = runtime;
+//    [ctx registerNativeModules];
+//  }
 }
 
 /**
@@ -78,13 +78,13 @@ RCT_EXPORT_MODULE(ExpoModulesCore);
  */
 RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(installModules)
 {
-  // Cast to protocol to access properties without importing Swift.h
-  id<EXAppContextProtocol> ctx = (id<EXAppContextProtocol>)_appContext;
-  if (_bridge && !ctx._runtime) {
-    // If `setBridge:` was called but the runtime was not found, we try again
-    // here.
-    [self maybeSetupAppContext];
-  }
+//  // Cast to protocol to access properties without importing Swift.h
+//  id<EXAppContextProtocol> ctx = (id<EXAppContextProtocol>)_appContext;
+//  if (_bridge && !ctx._runtime) {
+//    // If `setBridge:` was called but the runtime was not found, we try again
+//    // here.
+//    [self maybeSetupAppContext];
+//  }
   return nil;
 }
 

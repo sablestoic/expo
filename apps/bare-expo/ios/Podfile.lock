@@ -40,6 +40,7 @@ PODS:
     - ExpoModulesTestCore
   - Expo (55.0.2):
     - ExpoModulesCore
+    - ExpoModulesJSI
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -299,6 +300,7 @@ PODS:
     - Yoga
   - Expo/Tests (55.0.2):
     - ExpoModulesCore
+    - ExpoModulesJSI
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -505,13 +507,11 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - ExpoModulesJSI (55.0.12):
-    - hermes-engine
+  - ExpoModulesJSI (55.0.0):
     - React-Core
     - React-runtimescheduler
     - ReactCommon
-  - ExpoModulesJSI/Tests (55.0.12):
-    - hermes-engine
+  - ExpoModulesJSI/Tests (55.0.0):
     - React-Core
     - React-runtimescheduler
     - ReactCommon
@@ -3968,7 +3968,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 7ae52692e6cd791153592b52e84ea7de9669b489
   ReactCodegen: 62238424cbab6efd95b2ec776e4e24df9560596f
   ReactCommon: fa05a61d038ccdd03e63e647c828448f97831ecd
-  ReactNativeDependencies: d77c415a9bf174a89152868dba10a943d6d932e4
+  ReactNativeDependencies: f971fa0d77e2f74d63162ed069a26b8185fbc736
   RNCAsyncStorage: 2ad919e88b8bc2cd80e8697ce66d04d006743283
   RNCMaskedView: eb2b2e538afa907f05a5848a1a1ac26092e6fec9
   RNCPicker: d74667bdfc08ed389a2a277d95b8faf2349290a9

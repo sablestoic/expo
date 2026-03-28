@@ -1,5 +1,7 @@
 // Copyright 2025-present 650 Industries. All rights reserved.
 
+import ExpoModulesJSI
+
 /**
  Dynamic type for values conforming to `Encodable` protocol.
  Note that currently it can only encode from native to JavaScript values, thus cannot be used for arguments.
@@ -38,7 +40,8 @@ internal struct DynamicEncodableType: AnyDynamicType {
 
   func convertResult<ResultType>(_ result: ResultType, appContext: AppContext) throws -> Any {
     // TODO: We should get rid of this function, but it seems it's still used in some places
-    return try castToJS(result, appContext: appContext)
+//    return try castToJS(result, appContext: appContext)
+    fatalError()
   }
 
   var description: String {

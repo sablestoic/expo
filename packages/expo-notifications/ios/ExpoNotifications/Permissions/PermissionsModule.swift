@@ -21,7 +21,7 @@ public class PermissionsModule: Module {
         .permissions?
         .getPermissionUsingRequesterClass(
           ExpoNotificationsPermissionsRequester.self,
-          resolve: promise.resolver,
+          resolve: promise.legacyResolver,
           reject: promise.legacyRejecter
         )
     }
@@ -29,22 +29,22 @@ public class PermissionsModule: Module {
     AsyncFunction("requestPermissionsAsync") { (requestedPermissions: NotificationPermissionRecord, promise: Promise) in
       let defaultAuthorizationOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
       let options = requestedPermissions.numberOfOptionsRequested() > 0
-        ? requestedPermissions.authorizationOptionValue()
-        : defaultAuthorizationOptions
+      ? requestedPermissions.authorizationOptionValue()
+      : defaultAuthorizationOptions
       requester.setAuthorizationOptions(options)
 
       // Call `requestAuthorization` directly to ensure new options are always
       // forwarded to the OS, even if notifications were previously granted.
       // iOS safely handles repeated calls to `requestAuthorization(options:)`.
       // Expo Go notifications permissions are not scoped
-      let resolver: EXPromiseResolveBlock = { result in
-        if let permission = result as? [AnyHashable: Any] {
-          promise.resolver(EXPermissionsService.parsePermission(fromRequester: permission))
-        } else {
-          promise.legacyRejecter("ERR_PERMISSIONS_REQUEST_NOTIFICATIONS", "Unexpected permission result type", nil)
-        }
-      }
-      requester.requestAuthorizationOptions(options, resolver: resolver, rejecter: promise.legacyRejecter)
+//      let resolver: EXPromiseResolveBlock = { result in
+//        if let permission = result as? [AnyHashable: Any] {
+//          promise.resolver(EXPermissionsService.parsePermission(fromRequester: permission))
+//        } else {
+//          promise.legacyRejecter("ERR_PERMISSIONS_REQUEST_NOTIFICATIONS", "Unexpected permission result type", nil)
+//        }
+//      }
+//      requester.requestAuthorizationOptions(options, resolver: resolver, rejecter: promise.legacyRejecter)
     }
   }
 }

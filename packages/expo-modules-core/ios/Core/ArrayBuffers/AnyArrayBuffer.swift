@@ -8,7 +8,7 @@ internal protocol AnyArrayBuffer: AnyArgument {
   /**
    Initializes an array buffer from the given underlying representation.
    */
-   init(_ backingBuffer: RawArrayBuffer)
+//   init(_ backingBuffer: RawArrayBuffer)
 }
 
 // Extend the protocol to provide custom dynamic type

@@ -201,7 +201,7 @@ function Footer({ buttonTitle, canRunTests, onToggle, onRun }) {
   const { bottom, left, right } = useSafeAreaInsets();
   const { theme } = useTheme();
 
-  const isRunningInBareExpo = Constants.expoConfig.slug === 'bare-expo';
+  const isRunningInBareExpo = Constants.expoConfig?.slug === 'bare-expo';
   const paddingVertical = 16;
 
   return (

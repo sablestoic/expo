@@ -196,12 +196,12 @@ public final class SQLiteModule: Module {
 
       // swiftlint:disable line_length
 
-      AsyncFunction("runAsync") { (statement: NativeStatement, database: NativeDatabase, bindParams: [String: Any], bindBlobParams: [String: NativeArrayBuffer], shouldPassAsArray: Bool) -> [String: Any] in
-        return try run(statement: statement, database: database, bindParams: bindParams, bindBlobParams: bindBlobParams, shouldPassAsArray: shouldPassAsArray)
-      }.runOnQueue(moduleQueue)
-      Function("runSync") { (statement: NativeStatement, database: NativeDatabase, bindParams: [String: Any], bindBlobParams: [String: JavaScriptArrayBuffer], shouldPassAsArray: Bool) -> [String: Any] in
-        return try run(statement: statement, database: database, bindParams: bindParams, bindBlobParams: bindBlobParams, shouldPassAsArray: shouldPassAsArray)
-      }
+//      AsyncFunction("runAsync") { (statement: NativeStatement, database: NativeDatabase, bindParams: [String: Any], bindBlobParams: [String: NativeArrayBuffer], shouldPassAsArray: Bool) -> [String: Any] in
+//        return try run(statement: statement, database: database, bindParams: bindParams, bindBlobParams: bindBlobParams, shouldPassAsArray: shouldPassAsArray)
+//      }.runOnQueue(moduleQueue)
+//      Function("runSync") { (statement: NativeStatement, database: NativeDatabase, bindParams: [String: Any], bindBlobParams: [String: JavaScriptArrayBuffer], shouldPassAsArray: Bool) -> [String: Any] in
+//        return try run(statement: statement, database: database, bindParams: bindParams, bindBlobParams: bindBlobParams, shouldPassAsArray: shouldPassAsArray)
+//      }
 
       // swiftlint:enable line_length
 
@@ -270,33 +270,33 @@ public final class SQLiteModule: Module {
         try sessionClose(database: database, session: session)
       }
 
-      AsyncFunction("createChangesetAsync") { (session: NativeSession, database: NativeDatabase) -> NativeArrayBuffer in
-        return try sessionCreateChangeset(database: database, session: session)
-      }.runOnQueue(moduleQueue)
-      Function("createChangesetSync") { (session: NativeSession, database: NativeDatabase) -> NativeArrayBuffer in
-        return try sessionCreateChangeset(database: database, session: session)
-      }
+//      AsyncFunction("createChangesetAsync") { (session: NativeSession, database: NativeDatabase) -> NativeArrayBuffer in
+//        return try sessionCreateChangeset(database: database, session: session)
+//      }.runOnQueue(moduleQueue)
+//      Function("createChangesetSync") { (session: NativeSession, database: NativeDatabase) -> NativeArrayBuffer in
+//        return try sessionCreateChangeset(database: database, session: session)
+//      }
 
-      AsyncFunction("createInvertedChangesetAsync") { (session: NativeSession, database: NativeDatabase) -> NativeArrayBuffer in
-        return try sessionCreateInvertedChangeset(database: database, session: session)
-      }.runOnQueue(moduleQueue)
-      Function("createInvertedChangesetSync") { (session: NativeSession, database: NativeDatabase) -> NativeArrayBuffer in
-        return try sessionCreateInvertedChangeset(database: database, session: session)
-      }
+//      AsyncFunction("createInvertedChangesetAsync") { (session: NativeSession, database: NativeDatabase) -> NativeArrayBuffer in
+//        return try sessionCreateInvertedChangeset(database: database, session: session)
+//      }.runOnQueue(moduleQueue)
+//      Function("createInvertedChangesetSync") { (session: NativeSession, database: NativeDatabase) -> NativeArrayBuffer in
+//        return try sessionCreateInvertedChangeset(database: database, session: session)
+//      }
 
-      AsyncFunction("applyChangesetAsync") { (session: NativeSession, database: NativeDatabase, changeset: NativeArrayBuffer) in
-        try sessionApplyChangeset(database: database, session: session, changeset: changeset)
-      }.runOnQueue(moduleQueue)
-      Function("applyChangesetSync") { (session: NativeSession, database: NativeDatabase, changeset: JavaScriptArrayBuffer) in
-        try sessionApplyChangeset(database: database, session: session, changeset: changeset)
-      }
+//      AsyncFunction("applyChangesetAsync") { (session: NativeSession, database: NativeDatabase, changeset: NativeArrayBuffer) in
+//        try sessionApplyChangeset(database: database, session: session, changeset: changeset)
+//      }.runOnQueue(moduleQueue)
+//      Function("applyChangesetSync") { (session: NativeSession, database: NativeDatabase, changeset: JavaScriptArrayBuffer) in
+//        try sessionApplyChangeset(database: database, session: session, changeset: changeset)
+//      }
 
-      AsyncFunction("invertChangesetAsync") { (session: NativeSession, database: NativeDatabase, changeset: NativeArrayBuffer) -> NativeArrayBuffer in
-        return try sessionInvertChangeset(database: database, session: session, changeset: changeset)
-      }.runOnQueue(moduleQueue)
-      Function("invertChangesetSync") { (session: NativeSession, database: NativeDatabase, changeset: JavaScriptArrayBuffer) -> NativeArrayBuffer in
-        return try sessionInvertChangeset(database: database, session: session, changeset: changeset)
-      }
+//      AsyncFunction("invertChangesetAsync") { (session: NativeSession, database: NativeDatabase, changeset: NativeArrayBuffer) -> NativeArrayBuffer in
+//        return try sessionInvertChangeset(database: database, session: session, changeset: changeset)
+//      }.runOnQueue(moduleQueue)
+//      Function("invertChangesetSync") { (session: NativeSession, database: NativeDatabase, changeset: JavaScriptArrayBuffer) -> NativeArrayBuffer in
+//        return try sessionInvertChangeset(database: database, session: session, changeset: changeset)
+//      }
     }
   }
 
@@ -385,43 +385,43 @@ public final class SQLiteModule: Module {
 
   // swiftlint:disable line_length
 
-  private func run(statement: NativeStatement, database: NativeDatabase, bindParams: [String: Any], bindBlobParams: [String: ArrayBuffer], shouldPassAsArray: Bool) throws -> [String: Any] {
-    try maybeThrowForClosedDatabase(database)
-    try maybeThrowForFinalizedStatement(statement)
-
-    // The statement with parameter bindings is stateful,
-    // we have to guard with a critical section for thread safety.
-    statement.lock.wait()
-    defer {
-      statement.lock.signal()
-    }
-
-    exsqlite3_reset(statement.pointer)
-    exsqlite3_clear_bindings(statement.pointer)
-    for (key, param) in bindParams {
-      let index = try getBindParamIndex(statement: statement, key: key, shouldPassAsArray: shouldPassAsArray)
-      if index > 0 {
-        try bindStatementParam(statement: statement, with: param, at: index)
-      }
-    }
-    for (key, param) in bindBlobParams {
-      let index = try getBindParamIndex(statement: statement, key: key, shouldPassAsArray: shouldPassAsArray)
-      if index > 0 {
-        try bindStatementParam(statement: statement, with: param, at: index)
-      }
-    }
-
-    let ret = exsqlite3_step(statement.pointer)
-    if ret != SQLITE_ROW && ret != SQLITE_DONE {
-      throw SQLiteErrorException(convertSqlLiteErrorToString(database))
-    }
-    let firstRowValues: SQLiteColumnValues = (ret == SQLITE_ROW) ? try getColumnValues(statement: statement) : []
-    return [
-      "lastInsertRowId": Int(exsqlite3_last_insert_rowid(database.pointer)),
-      "changes": Int(exsqlite3_changes(database.pointer)),
-      "firstRowValues": firstRowValues
-    ]
-  }
+//  private func run(statement: NativeStatement, database: NativeDatabase, bindParams: [String: Any], bindBlobParams: [String: ArrayBuffer], shouldPassAsArray: Bool) throws -> [String: Any] {
+//    try maybeThrowForClosedDatabase(database)
+//    try maybeThrowForFinalizedStatement(statement)
+//
+//    // The statement with parameter bindings is stateful,
+//    // we have to guard with a critical section for thread safety.
+//    statement.lock.wait()
+//    defer {
+//      statement.lock.signal()
+//    }
+//
+//    exsqlite3_reset(statement.pointer)
+//    exsqlite3_clear_bindings(statement.pointer)
+//    for (key, param) in bindParams {
+//      let index = try getBindParamIndex(statement: statement, key: key, shouldPassAsArray: shouldPassAsArray)
+//      if index > 0 {
+//        try bindStatementParam(statement: statement, with: param, at: index)
+//      }
+//    }
+//    for (key, param) in bindBlobParams {
+//      let index = try getBindParamIndex(statement: statement, key: key, shouldPassAsArray: shouldPassAsArray)
+//      if index > 0 {
+//        try bindStatementParam(statement: statement, with: param, at: index)
+//      }
+//    }
+//
+//    let ret = exsqlite3_step(statement.pointer)
+//    if ret != SQLITE_ROW && ret != SQLITE_DONE {
+//      throw SQLiteErrorException(convertSqlLiteErrorToString(database))
+//    }
+//    let firstRowValues: SQLiteColumnValues = (ret == SQLITE_ROW) ? try getColumnValues(statement: statement) : []
+//    return [
+//      "lastInsertRowId": Int(exsqlite3_last_insert_rowid(database.pointer)),
+//      "changes": Int(exsqlite3_changes(database.pointer)),
+//      "firstRowValues": firstRowValues
+//    ]
+//  }
 
   // swiftlint:enable line_length
 
@@ -614,11 +614,12 @@ public final class SQLiteModule: Module {
       }
       return String(cString: text)
     case SQLITE_BLOB:
-      guard let blob = exsqlite3_column_blob(instance, index) else {
-        return NativeArrayBuffer.allocate(size: 0)
-      }
-      let size = exsqlite3_column_bytes(instance, index)
-      return NativeArrayBuffer.copy(of: blob, count: Int(size))
+      fatalError()
+//      guard let blob = exsqlite3_column_blob(instance, index) else {
+//        return NativeArrayBuffer.allocate(size: 0)
+//      }
+//      let size = exsqlite3_column_bytes(instance, index)
+//      return NativeArrayBuffer.copy(of: blob, count: Int(size))
     case SQLITE_NULL:
       return NSNull()
     default:
@@ -639,10 +640,10 @@ public final class SQLiteModule: Module {
       exsqlite3_bind_double(instance, index, param)
     case let param as String:
       exsqlite3_bind_text(instance, index, param, -1, SQLITE_TRANSIENT)
-    case let param as ArrayBuffer:
-      _ = param.withUnsafeBytes {
-        exsqlite3_bind_blob(instance, index, $0.baseAddress, Int32(param.byteLength), SQLITE_TRANSIENT)
-      }
+//    case let param as ArrayBuffer:
+//      _ = param.withUnsafeBytes {
+//        exsqlite3_bind_blob(instance, index, $0.baseAddress, Int32(param.byteLength), SQLITE_TRANSIENT)
+//      }
     case let param as Bool:
       exsqlite3_bind_int(instance, index, param ? 1 : 0)
     default:
@@ -762,63 +763,63 @@ public final class SQLiteModule: Module {
     exsqlite3session_delete(session.pointer)
   }
 
-  private func sessionCreateChangeset(database: NativeDatabase, session: NativeSession) throws -> NativeArrayBuffer {
-    try maybeThrowForClosedDatabase(database)
-    var size: Int32 = 0
-    var buffer: UnsafeMutableRawPointer?
-    if exsqlite3session_changeset(session.pointer, &size, &buffer) != SQLITE_OK {
-      throw SQLiteErrorException(convertSqlLiteErrorToString(database))
-    }
-    guard let buffer else {
-      return NativeArrayBuffer.allocate(size: 0)
-    }
-    defer { exsqlite3_free(buffer) }
-    return NativeArrayBuffer.copy(of: buffer, count: Int(size))
-  }
+//  private func sessionCreateChangeset(database: NativeDatabase, session: NativeSession) throws -> NativeArrayBuffer {
+//    try maybeThrowForClosedDatabase(database)
+//    var size: Int32 = 0
+//    var buffer: UnsafeMutableRawPointer?
+//    if exsqlite3session_changeset(session.pointer, &size, &buffer) != SQLITE_OK {
+//      throw SQLiteErrorException(convertSqlLiteErrorToString(database))
+//    }
+//    guard let buffer else {
+//      return NativeArrayBuffer.allocate(size: 0)
+//    }
+//    defer { exsqlite3_free(buffer) }
+//    return NativeArrayBuffer.copy(of: buffer, count: Int(size))
+//  }
 
-  private func sessionCreateInvertedChangeset(database: NativeDatabase, session: NativeSession) throws -> NativeArrayBuffer {
-    do {
-      let changeset = try sessionCreateChangeset(database: database, session: session)
-      return try sessionInvertChangeset(database: database, session: session, changeset: changeset)
-    } catch {
-      throw error
-    }
-  }
+//  private func sessionCreateInvertedChangeset(database: NativeDatabase, session: NativeSession) throws -> NativeArrayBuffer {
+//    do {
+//      let changeset = try sessionCreateChangeset(database: database, session: session)
+//      return try sessionInvertChangeset(database: database, session: session, changeset: changeset)
+//    } catch {
+//      throw error
+//    }
+//  }
 
-  private func sessionApplyChangeset(database: NativeDatabase, session: NativeSession, changeset: ArrayBuffer) throws {
-    try maybeThrowForClosedDatabase(database)
-    try changeset.withUnsafeBytes {
-      let buffer = UnsafeMutableRawPointer(mutating: $0.baseAddress)
-      if exsqlite3changeset_apply(
-        database.pointer,
-        Int32(changeset.byteLength),
-        buffer,
-        nil,
-        { _, _, _ -> Int32 in
-          return SQLITE_CHANGESET_REPLACE
-        },
-        nil
-      ) != SQLITE_OK {
-        throw SQLiteErrorException(convertSqlLiteErrorToString(database))
-      }
-    }
-  }
+//  private func sessionApplyChangeset(database: NativeDatabase, session: NativeSession, changeset: ArrayBuffer) throws {
+//    try maybeThrowForClosedDatabase(database)
+//    try changeset.withUnsafeBytes {
+//      let buffer = UnsafeMutableRawPointer(mutating: $0.baseAddress)
+//      if exsqlite3changeset_apply(
+//        database.pointer,
+//        Int32(changeset.byteLength),
+//        buffer,
+//        nil,
+//        { _, _, _ -> Int32 in
+//          return SQLITE_CHANGESET_REPLACE
+//        },
+//        nil
+//      ) != SQLITE_OK {
+//        throw SQLiteErrorException(convertSqlLiteErrorToString(database))
+//      }
+//    }
+//  }
 
-  private func sessionInvertChangeset(database: NativeDatabase, session: NativeSession, changeset: ArrayBuffer) throws -> NativeArrayBuffer {
-    try maybeThrowForClosedDatabase(database)
-    return try changeset.withUnsafeBytes {
-      let inBuffer = UnsafeMutableRawPointer(mutating: $0.baseAddress)
-      var outSize: Int32 = 0
-      var outBuffer: UnsafeMutableRawPointer?
-
-      if exsqlite3changeset_invert(Int32(changeset.byteLength), inBuffer, &outSize, &outBuffer) != SQLITE_OK {
-        throw SQLiteErrorException(convertSqlLiteErrorToString(database))
-      }
-      guard let outBuffer else {
-        return NativeArrayBuffer.allocate(size: 0)
-      }
-      defer { exsqlite3_free(outBuffer) }
-      return NativeArrayBuffer.copy(of: outBuffer, count: Int(outSize))
-    }
-  }
+//  private func sessionInvertChangeset(database: NativeDatabase, session: NativeSession, changeset: ArrayBuffer) throws -> NativeArrayBuffer {
+//    try maybeThrowForClosedDatabase(database)
+//    return try changeset.withUnsafeBytes {
+//      let inBuffer = UnsafeMutableRawPointer(mutating: $0.baseAddress)
+//      var outSize: Int32 = 0
+//      var outBuffer: UnsafeMutableRawPointer?
+//
+//      if exsqlite3changeset_invert(Int32(changeset.byteLength), inBuffer, &outSize, &outBuffer) != SQLITE_OK {
+//        throw SQLiteErrorException(convertSqlLiteErrorToString(database))
+//      }
+//      guard let outBuffer else {
+//        return NativeArrayBuffer.allocate(size: 0)
+//      }
+//      defer { exsqlite3_free(outBuffer) }
+//      return NativeArrayBuffer.copy(of: outBuffer, count: Int(outSize))
+//    }
+//  }
 }

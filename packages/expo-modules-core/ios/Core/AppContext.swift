@@ -1,4 +1,5 @@
 @preconcurrency internal import React
+import ExpoModulesJSI
 
 /**
  The app context is an interface to a single Expo app.
@@ -61,16 +62,10 @@ public final class AppContext: NSObject, @unchecked Sendable {
   /**
    Underlying JSI runtime of the running app.
    */
-  @objc
   public var _runtime: ExpoRuntime? {
     didSet {
       if _runtime == nil {
-        JavaScriptActor.assumeIsolated {
-          // When the runtime is unpinned from the context (e.g. deallocated),
-          // we should make sure to release all JS objects from the memory.
-          // Otherwise the JSCRuntime asserts may fail on deallocation.
-          releaseRuntimeObjects()
-        }
+        destroy()
       } else if _runtime != oldValue {
         JavaScriptActor.assumeIsolated {
           // Try to install the core object automatically when the runtime changes.
@@ -92,13 +87,18 @@ public final class AppContext: NSObject, @unchecked Sendable {
     }
   }
 
-  /** 
+  public typealias UIRuntimeFactory = @JavaScriptActor (
+    _ appContext: AppContext,
+    _ pointerValue: JavaScriptValue,
+    _ runtime: JavaScriptRuntime
+  ) throws -> JavaScriptRuntime
+
+  /**
    Hook for ExpoModulesWorklets to register the UI runtime installer.
    When set, the `installOnUIRuntime` function in CoreModule will use this to create the worklet runtime.
   */
-  nonisolated(unsafe) public static var uiRuntimeFactory: ((_ appContext: AppContext, _ pointerValue: JavaScriptValue, _ runtime: JavaScriptRuntime) throws -> JavaScriptRuntime)?
+  nonisolated(unsafe) public static var uiRuntimeFactory: UIRuntimeFactory?
 
-  @objc
   public var _uiRuntime: JavaScriptRuntime? {
     didSet {
       if _uiRuntime != oldValue {
@@ -219,7 +219,7 @@ public final class AppContext: NSObject, @unchecked Sendable {
       throw JavaScriptClassNotFoundException()
     }
     let prototype = try jsClass.getProperty("prototype").asObject()
-    return try runtime.createObject(withPrototype: prototype)
+    return try runtime.createObject(prototype: prototype)
   }
 
   // MARK: - Legacy modules
@@ -363,22 +363,8 @@ public final class AppContext: NSObject, @unchecked Sendable {
    When remote debugging is enabled, this will always return `nil`.
    */
   @JavaScriptActor
-  public func getNativeModuleObject(_ moduleName: String) -> JavaScriptObject? {
-    return moduleRegistry.get(moduleHolderForName: moduleName)?.javaScriptObject
-  }
-
-  /**
-   Returns a JavaScript object that represents a module with given name.
-   This is a non-actor-isolated wrapper for ObjC interop that uses `assumeIsolated` internally.
-
-   - Warning: This method must only be called from the JavaScript thread.
-   It will crash if called from other threads.
-   */
-  @objc
-  public func getNativeModuleObjectUnsafe(_ moduleName: String) -> JavaScriptObject? {
-    return JavaScriptActor.assumeIsolated {
-      return moduleRegistry.get(moduleHolderForName: moduleName)?.javaScriptObject
-    }
+  public func getNativeModuleObject(_ moduleName: String) -> JavaScriptValue? {
+    return moduleRegistry.get(moduleHolderForName: moduleName)?.getJavaScriptValue()
   }
 
   /**
@@ -392,16 +378,16 @@ public final class AppContext: NSObject, @unchecked Sendable {
     resolve: @escaping EXPromiseResolveBlock,
     reject: @escaping EXPromiseRejectBlock
   ) {
-    moduleRegistry
-      .get(moduleHolderForName: moduleName)?
-      .call(function: functionName, args: args) { result in
-        switch result {
-        case .failure(let error):
-          reject(error.code, error.description, error)
-        case .success(let value):
-          resolve(value)
-        }
-      }
+//    moduleRegistry
+//      .get(moduleHolderForName: moduleName)?
+//      .call(function: functionName, args: args) { result in
+//        switch result {
+//        case .failure(let error):
+//          reject(error.code, error.description, error)
+//        case .success(let value):
+//          resolve(value)
+//        }
+//      }
   }
 
   // MARK: - Modules registration
@@ -450,49 +436,55 @@ public final class AppContext: NSObject, @unchecked Sendable {
 
   // MARK: - Runtime
 
+  @objc
+  public func setRuntime(_ provider: JavaScriptRuntimeProvider) {
+    _runtime = ExpoRuntime(provider: provider)
+  }
+
   @JavaScriptActor
   internal func prepareRuntime() throws {
-    let runtime = try runtime
-    let coreObject = runtime.createObject()
+    let installer = ExpoRuntimeInstaller(appContext: self, runtime: try runtime)
 
-    coreObject.defineProperty("__expo_app_identifier__", value: appIdentifier, options: [])
+    // Install `global.expo`.
+    let coreObject = installer.installCoreObject()
+
+    if let appIdentifier {
+      coreObject.defineProperty("__expo_app_identifier__", value: appIdentifier)
+    }
 
     try coreModuleHolder.definition.decorate(object: coreObject, appContext: self)
 
-    // Initialize `global.expo`.
-    try runtime.initializeCoreObject(coreObject)
-
     // Install `global.expo.EventEmitter`.
-    EXJavaScriptRuntimeManager.installEventEmitterClass(runtime)
+    installer.installEventEmitterClass()
 
     // Install `global.expo.SharedObject`.
-    EXJavaScriptRuntimeManager.installSharedObjectClass(runtime) { [weak sharedObjectRegistry] objectId in
+    installer.installSharedObjectClass() { [weak sharedObjectRegistry] objectId in
       sharedObjectRegistry?.delete(objectId)
     }
 
     // Install `global.expo.SharedRef`.
-    EXJavaScriptRuntimeManager.installSharedRefClass(runtime)
+    installer.installSharedRefClass()
 
     // Install `global.expo.NativeModule`.
-    EXJavaScriptRuntimeManager.installNativeModuleClass(runtime)
+    installer.installNativeModuleClass()
 
     // Install the modules host object as the `global.expo.modules`.
-    EXJavaScriptRuntimeManager.installExpoModulesHostObject(self)
+    try installer.installExpoModulesHostObject()
   }
 
   @MainActor
   internal func prepareUIRuntime() throws {
-    let uiRuntime = try uiRuntime
-    let coreObject = uiRuntime.createObject()
-
-    // Initialize `global.expo`.
-    uiRuntime.global().defineProperty(EXGlobalCoreObjectPropertyName, value: coreObject, options: .enumerable)
-
-    // Install `global.expo.EventEmitter`.
-    EXJavaScriptRuntimeManager.installEventEmitterClass(uiRuntime)
-
-    // Install `global.expo.NativeModule`.
-    EXJavaScriptRuntimeManager.installNativeModuleClass(uiRuntime)
+//    let uiRuntime = try uiRuntime
+//    let coreObject = uiRuntime.createObject()
+//
+//    // Initialize `global.expo`.
+//    uiRuntime.global().defineProperty(EXGlobalCoreObjectPropertyName, value: coreObject, options: .enumerable)
+//
+//    // Install `global.expo.EventEmitter`.
+//    EXJavaScriptRuntimeManager.installEventEmitterClass(uiRuntime)
+//
+//    // Install `global.expo.NativeModule`.
+//    EXJavaScriptRuntimeManager.installNativeModuleClass(uiRuntime)
   }
 
   /**
@@ -504,11 +496,21 @@ public final class AppContext: NSObject, @unchecked Sendable {
     classRegistry.clear()
 
     for module in moduleRegistry {
-      module.javaScriptObject = nil
+      module.releaseJavaScriptObject()
     }
   }
 
   // MARK: - Deallocation
+
+  @objc
+  public func destroy() {
+    JavaScriptActor.assumeIsolated {
+      // When the runtime is unpinned from the context (e.g. deallocated),
+      // we should make sure to release all JS objects from the memory.
+      // Otherwise the JSCRuntime asserts may fail on deallocation.
+      releaseRuntimeObjects()
+    }
+  }
 
   /**
    Cleans things up before deallocation.
