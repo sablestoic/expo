@@ -3204,8 +3204,8 @@ DEPENDENCIES:
   - ExpoMeshGradient (from `../../../packages/expo-mesh-gradient/ios`)
   - ExpoModulesCore (from `../../../packages/expo-modules-core`)
   - ExpoModulesCore/Tests (from `../../../packages/expo-modules-core`)
-  - ExpoModulesJSI (from `../../../packages/expo-modules-core`)
-  - ExpoModulesJSI/Tests (from `../../../packages/expo-modules-core`)
+  - ExpoModulesJSI (from `../../../packages/expo-modules-jsi/apple`)
+  - ExpoModulesJSI/Tests (from `../../../packages/expo-modules-jsi/apple`)
   - "ExpoModulesMacros (from `../../../node_modules/.pnpm/@expo+expo-modules-macros-plugin@0.0.7/node_modules/@expo/expo-modules-macros-plugin/apple`)"
   - "ExpoModulesMacros/Tests (from `../../../node_modules/.pnpm/@expo+expo-modules-macros-plugin@0.0.7/node_modules/@expo/expo-modules-macros-plugin/apple`)"
   - ExpoModulesTestCore (from `../../../packages/expo-modules-test-core/ios`)
@@ -3516,7 +3516,7 @@ EXTERNAL SOURCES:
     :path: "../../../packages/expo-modules-core"
   ExpoModulesJSI:
     inhibit_warnings: false
-    :path: "../../../packages/expo-modules-core"
+    :path: "../../../packages/expo-modules-jsi/apple"
   ExpoModulesMacros:
     inhibit_warnings: false
     :path: "../../../node_modules/.pnpm/@expo+expo-modules-macros-plugin@0.0.7/node_modules/@expo/expo-modules-macros-plugin/apple"
@@ -3802,7 +3802,7 @@ SPEC CHECKSUMS:
   EXConstants: ed3e09607493bb717a7932f0e6786846169692a2
   EXJSONUtils: 475f1af3d20fbd99268694df81d096817092aa89
   EXManifests: ad24b3a497444eee9e07cc8590b09974ba369050
-  Expo: c56d8767adbfa930c299ad052091e0e0e13d0a68
+  Expo: 32acc95e3064fcf5ef0918a2e17c58caf238a372
   expo-dev-client: 929c5e873b07c54035ab42aa165f095f74478d6c
   expo-dev-launcher: 52dad5ea74c968013ebb2707370e28a0cf9d8b7f
   expo-dev-menu: 0758a54a6cd1605d3dd917717e447e1a10c3e84f
@@ -3849,8 +3849,8 @@ SPEC CHECKSUMS:
   ExpoMaps: 94294944cff46ad1170ce4f92800adecbcdd04ac
   ExpoMediaLibrary: 2fbddcb06042f43076cf5e495e8237ec2ab95726
   ExpoMeshGradient: 93cf09380e6d86cd7a525da26dfddab2620a8421
-  ExpoModulesCore: 175c54e26f394abfc6da4371b3fb4f8d2d0716c8
-  ExpoModulesJSI: 793687b04cbaa73ee8548bfdbcfba85954d1b2b5
+  ExpoModulesCore: d872f1b4e130e312cdfbed10279042026b956b16
+  ExpoModulesJSI: 038a93335094858ad924173b98c57f721fac7c4f
   ExpoModulesMacros: 6e01118aed19527180871e271177089c34d90dd2
   ExpoModulesTestCore: 62ce59e8c8162b449e65467e0421240256ba6732
   ExpoModulesWorklets: 0217cc44b4a3f754b1fe27dab41e3e641f8566c6
@@ -3880,7 +3880,7 @@ SPEC CHECKSUMS:
   EXUpdates: a0f980531cbcf45906b2489febd4e11a5895f332
   EXUpdatesInterface: 5ab8c3e8018ef533a132b9327af5b2a1926dd299
   FBLazyVector: a2650ac3702400e3bbdad8dcd385c9c5dce22d37
-  hermes-engine: 28d01fde82b0647ec4e5718e74a7796fde3940c9
+  hermes-engine: e1ae00897676f600a9439d408b42f8c8ba5dbc24
   libavif: 84bbb62fb232c3018d6f1bab79beea87e35de7b7
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
@@ -3898,7 +3898,7 @@ SPEC CHECKSUMS:
   React: aa109dc0a057583f3ce0c190295d58d6f820cea4
   React-callinvoker: 1fea1250fa3063099299506b0c902b1b4e26f4a3
   React-Core: 1617d21688707f28dc37e28eaa1116e5f2da863e
-  React-Core-prebuilt: 561d34d559207b3e92467ccdffc81f63773f6bb9
+  React-Core-prebuilt: 7c05919abb575ba268b9510bfac31ec30b727461
   React-CoreModules: 865af194dd2ad104a4425d3697458cc630e94d28
   React-cxxreact: f753ef86236c3ab398398315f3910a1751068e55
   React-debug: a8c18f79ee9a2915719c0dcb69299916df218d62

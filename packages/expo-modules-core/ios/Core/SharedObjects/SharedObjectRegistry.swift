@@ -63,8 +63,10 @@ public final class SharedObjectRegistry {
   /**
    Shared object releaser that is common to all instances.
    */
-  private lazy var objectReleaser: (SharedObjectId) -> Void = { [weak self] objectId in
-    self?.delete(objectId)
+  private lazy var objectReleaser: JavaScriptNativeState.Deallocator = { [weak self] nativeState in
+    if let nativeState = nativeState as? SharedObjectNativeState {
+      self?.delete(nativeState.id)
+    }
   }
 
   /**
@@ -117,7 +119,7 @@ public final class SharedObjectRegistry {
 
     // Set the native state and memory footprint in the JS object.
     if let runtime = try? appContext?.runtime {
-//      SharedObjectUtils.setNativeState(jsObject, runtime: runtime, objectId: id, releaser: objectReleaser)
+      jsObject.setNativeState(SharedObjectNativeState(id: id, objectReleaser))
 
       let memoryPressure = nativeObject.getAdditionalMemoryPressure()
       if memoryPressure > 0 {
@@ -126,7 +128,6 @@ public final class SharedObjectRegistry {
     }
 
     // Save the pair in the dictionary.
-//    let jsWeakObject = jsObject.createWeak()
     state.withLock { state in
       state.pairs[id] = (native: nativeObject, javaScript: jsObject.asValue())
     }

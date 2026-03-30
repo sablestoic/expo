@@ -16,7 +16,7 @@ open class JavaScriptNativeState {
     }
   }
 
-  private typealias Deallocator = (_ nativeState: JavaScriptNativeState) -> Void
+  public typealias Deallocator = (_ nativeState: JavaScriptNativeState) -> Void
   private var deallocator: Deallocator? = nil
 
   public init() {
@@ -51,7 +51,7 @@ open class JavaScriptNativeState {
   /**
    Sets a deallocator, a closure that is invoked when this native state is no longer attached to any JS object.
    */
-  public func setDeallocator(_ deallocator: @escaping (JavaScriptNativeState) -> Void) throws(NativeStateReleasedError) {
+  public func setDeallocator(_ deallocator: @escaping Deallocator) throws(NativeStateReleasedError) {
     if isReleased {
       throw NativeStateReleasedError()
     }
