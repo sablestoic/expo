@@ -1,6 +1,11 @@
 // Copyright 2024-present 650 Industries. All rights reserved.
 
-#include "Utils.h"
+#ifdef __APPLE__
+#include <ExpoModulesJSI/JSIUtils.h>
+#else
+#include "JSIUtils.h"
+#endif
+
 #include "SharedObject.h"
 
 namespace expo::SharedObject {
@@ -16,7 +21,7 @@ NativeState::~NativeState() {
 
 #pragma mark - Utils
 
-void installBaseClass(jsi::Runtime &runtime, const ObjectReleaser releaser) {
+void installBaseClass(jsi::Runtime &runtime, const ObjectReleaser& releaser) {
   jsi::Function baseClass = EventEmitter::getClass(runtime);
   jsi::Function klass = expo::common::createInheritingClass(runtime, "SharedObject", baseClass);
   jsi::Object prototype = klass.getPropertyAsObject(runtime, "prototype");
@@ -65,7 +70,7 @@ void installBaseClass(jsi::Runtime &runtime, const ObjectReleaser releaser) {
   prototype.setProperty(runtime, "toJSON", toJSONFunction);
 
   // This property should be deprecated, but it's still used when passing as a view prop.
-  defineProperty(runtime, prototype, "__expo_shared_object_id__", common::PropertyDescriptor {
+  defineProperty(runtime, &prototype, "__expo_shared_object_id__", common::PropertyDescriptor {
     .get = [](jsi::Runtime &runtime, jsi::Object thisObject) {
       if (thisObject.hasNativeState<NativeState>(runtime)) {
         auto nativeState = thisObject.getNativeState<NativeState>(runtime);

@@ -105,9 +105,13 @@ public class ObjectDefinition: AnyDefinition, JavaScriptObjectBuilder {
 
   @JavaScriptActor
   internal func decorateWithConstants(object: borrowing JavaScriptObject, appContext: AppContext) throws {
-//    for (key, value) in getLegacyConstants() {
-//      object.setProperty(key, value: value)
-//    }
+    for (key, value) in getLegacyConstants() {
+      if let value = value as? JavaScriptRepresentable {
+        object.setProperty(key, value: value)
+      } else {
+        object.setProperty(key, value: .null())
+      }
+    }
 
     for constant in constants.values {
       let descriptor = try constant.buildDescriptor(appContext: appContext)

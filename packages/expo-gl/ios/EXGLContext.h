@@ -4,7 +4,6 @@
 #import <ExpoGL/EXGLNativeApi.h>
 #import <ExpoModulesCore/EXModuleRegistry.h>
 #import <ExpoModulesCore/EXFileSystemInterface.h>
-//#import <ExpoModulesJSI/EXJavaScriptRuntime.h>
 
 @class EXGLContext;
 

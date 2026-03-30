@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "jsi.h"
+#include <jsi/jsi.h>
 
 namespace jsi = facebook::jsi;
 
