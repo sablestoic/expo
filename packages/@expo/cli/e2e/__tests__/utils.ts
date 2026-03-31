@@ -124,7 +124,7 @@ export async function createFromFixtureAsync(
       for (const pkg of linkExpoPackages) {
         const link = createPackageLink(projectRoot, `packages/${pkg}`);
         log('Linked into dependencies', pkg);
-        dependencies[pkg] = '*'
+        dependencies[pkg] = '*';
         resolutions[pkg] = link;
       }
 
@@ -163,6 +163,16 @@ export async function createFromFixtureAsync(
       assert(staticConfigPath);
       await JsonFile.writeAsync(staticConfigPath, modifiedConfig as any);
     }
+
+    await fs.promises.writeFile(
+      path.join(projectRoot, 'pnpm-workspace.yaml'),
+      [
+        'minimumReleaseAgeExclude:',
+        "  - '@expo/*'",
+        "  - '@react-native/*'",
+        "  - 'react-native'",
+      ].join('\n')
+    );
 
     // Install the packages for e2e experience.
     await executePnpmAsync(projectRoot, ['install']);
